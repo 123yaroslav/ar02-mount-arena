@@ -38,7 +38,7 @@ class Builder:
         self.rng = rng
         self.ro = read_only
         self.steps: list[dict] = []
-        self.text = TextSource(rng, pool_size=3000)
+        self.text = TextSource(rng, pool_size=1500)
         self.kids: dict[str, set[str]] = {"": set()}
         self.size: dict[str, int] = {}
         self.is_text: dict[str, bool] = {}

@@ -48,21 +48,26 @@ def main() -> None:
         xs = [math.log2(vals.get(k, 1.0)) for k in KINDS]
         ax.barh(ys, xs, height=height * 0.85, color=SERIES[i], label=name, edgecolor=SURFACE, linewidth=1)
         for y, x, k in zip(ys, xs, KINDS):
-            ax.text(x + 0.04, y, f"{vals.get(k, 1.0):.2f}".replace(".", ","), va="center", fontsize=7, color=MUTED)
+            label = f"{vals.get(k, 1.0):.2f}".replace(".", ",")
+            if x >= 0:
+                ax.text(x + 0.04, y, label, va="center", ha="left", fontsize=7, color=MUTED)
+            else:
+                ax.text(x - 0.04, y, label, va="center", ha="right", fontsize=7, color=MUTED)
     ax.axvline(0, color=INK, linewidth=0.8)
     ax.set_yticks(range(len(KINDS)), [KIND_RU[k] for k in KINDS], color=INK, fontsize=9)
     ax.invert_yaxis()
     top = max(math.log2(v) for _, vals in data for v in vals.values())
     ticks = list(range(0, int(math.ceil(top)) + 1))
     ax.set_xticks(ticks, [f"x{2 ** t}" for t in ticks], color=MUTED, fontsize=8)
-    ax.set_xlim(-0.1, max(ticks) + 0.4)
+    low = min(math.log2(v) for _, vals in data for v in vals.values())
+    ax.set_xlim(min(-0.1, low - 0.45), max(ticks) + 0.4)
     ax.grid(axis="x", color=GRID, linewidth=0.6)
     ax.set_axisbelow(True)
     for side in ["top", "right", "left"]:
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
     ax.tick_params(length=0)
-    ax.set_xlabel("ускорение относительно baseline, train (логарифмическая шкала)", color=MUTED, fontsize=8)
+    ax.set_xlabel("ускорение относительно baseline на train, симулятор v2 (логарифмическая шкала)", color=MUTED, fontsize=8)
     ax.legend(frameon=False, fontsize=8, loc="lower right", labelcolor=INK)
     fig.tight_layout(pad=1.2)
     a.out.parent.mkdir(parents=True, exist_ok=True)

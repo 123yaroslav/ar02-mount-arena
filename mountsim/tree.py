@@ -152,42 +152,72 @@ def _shape(seed: int) -> dict:
     return {"files": files, "dirs": all_dirs, "big": big_path, "big_is_text": big_is_text, "links": links}
 
 
-class TextSource:
-    """Источник текста, похожего на код: строки из пула токенов, сжимается примерно как исходники."""
+LOCAL_POOL = 120  # половин строк в словаре одного файла
+COMMON_SHARE = 0.3  # доля шаблонных строк (скобки, импорты, end, return), подобрана по настоящему коду
+BOILERPLATE = [
+    "}", "end", "{", "]", ")", "", "    }", "        }", "    end", "  end", "return nil", "return err", "pass", "else {",
+    "} else {", "if err != nil {", "    return err", "import os", "import sys", "from typing import Any", "package main",
+    "#include <stdio.h>", "#include <stdlib.h>", "use std::fmt;", "};", "*/", "/**", " */", "<?php", "</div>", "<div>",
+    "    @Override", "import java.util.List;", "require 'json'", "module.exports = {", "export default {", "const _ = require('lodash');",
+]
 
-    def __init__(self, rng: random.Random, pool_size: int = 20000):
+
+class TextSource:
+    """Источник текста, похожего на код.
+
+    Строка склеивается из двух случайных половин из пулов фрагментов, поэтому строки
+    редко повторяются целиком. Четверть строк берется из небольшого набора шаблонных
+    строк, как скобки и импорты в настоящем коде. Параметры подобраны так, чтобы zlib
+    и словарь строк сжимали текст примерно как настоящие репозитории
+    (scripts/calibrate_text.py).
+    """
+
+    def __init__(self, rng: random.Random, pool_size: int = 4000):
         self.rng = rng
-        self.pool = []
-        for _ in range(pool_size):
-            indent = " " * (4 * rng.randint(0, 3))
-            words = rng.choices(TOKENS, k=rng.randint(2, 9))
-            if rng.random() < 0.3:
-                words.append(_word(rng, rng.randint(2, 4)))
-            if rng.random() < 0.2:
-                words.append(str(rng.randint(0, 99999)))
-            self.pool.append(indent + " ".join(words))
+
+        def fragment(indent: bool) -> str:
+            words = rng.choices(TOKENS, k=rng.randint(1, 5))
+            if rng.random() < 0.5:
+                words.append(_word(rng, rng.randint(2, 4)) + rng.choice(["", "_id", "Name", "(", ")", "()", ":", ","]))
+            if rng.random() < 0.25:
+                words.append(str(rng.randint(0, 9999)))
+            return (" " * (4 * rng.randint(0, 3)) if indent else "") + " ".join(words)
+
+        self.heads = [fragment(True) for _ in range(pool_size)]
+        self.tails = [fragment(False) for _ in range(pool_size)]
+        self.common = BOILERPLATE + [fragment(True) for _ in range(160)]
+
+    def lines(self, n: int, local: int = 0) -> list[str]:
+        """n строк. local > 0 берет половины из случайного подмножества пулов, как словарь одного файла."""
+        rng = self.rng
+        head_pool = rng.sample(self.heads, local) if local else self.heads
+        tail_pool = rng.sample(self.tails, local) if local else self.tails
+        heads = rng.choices(head_pool, k=n)
+        tails = rng.choices(tail_pool, k=n)
+        common = rng.choices(self.common, k=n)
+        mask = rng.choices((False, True), weights=(1 - COMMON_SHARE, COMMON_SHARE), k=n)
+        return [c if m else h + " " + t for h, t, c, m in zip(heads, tails, common, mask)]
 
     def text(self, size: int) -> bytes:
         if size <= 0:
             return b""
-        lines = self.rng.choices(self.pool, k=size // 30 + 2)
-        data = ("\n".join(lines) + "\n").encode()
+        local = LOCAL_POOL
+        data = ("\n".join(self.lines(size // 28 + 2, local)) + "\n").encode()
         while len(data) < size:
-            data += ("\n".join(self.rng.choices(self.pool, k=size // 30 + 2)) + "\n").encode()
+            data += ("\n".join(self.lines(size // 28 + 2, local)) + "\n").encode()
         return data[:size]
 
     def log(self, size: int) -> bytes:
         rng = self.rng
         levels = ["INFO", "DEBUG", "WARN", "ERROR"]
-        chunk_lines = []
         t = 1700000000
         out = bytearray()
         while len(out) < size:
-            chunk_lines.clear()
-            for _ in range(2000):
+            chunk = []
+            for line in self.lines(2000):
                 t += rng.randint(0, 3)
-                chunk_lines.append(f"{t} {rng.choice(levels)} {rng.choice(self.pool).strip()}")
-            out += ("\n".join(chunk_lines) + "\n").encode()
+                chunk.append(f"{t} {rng.choice(levels)} {line.strip()}")
+            out += ("\n".join(chunk) + "\n").encode()
         return bytes(out[:size])
 
 
