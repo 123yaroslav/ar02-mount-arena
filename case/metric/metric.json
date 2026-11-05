@@ -1,7 +1,7 @@
 {
   "kind": "command",
   "direction": "maximize",
-  "version": "ar02-mount-speedup-v1",
+  "version": "ar02-mount-speedup-v2",
   "command": {
     "argv": ["python", "score.py"],
     "uses_model": false,

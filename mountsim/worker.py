@@ -23,13 +23,15 @@ def _cpu() -> float:
 class Env:
     """То, что протокол может делать с окружением. Время виртуальное."""
 
-    def __init__(self, side: str):
+    def __init__(self, side: str, clock_offset: float = 0.0):
         self._side = side
         self._now = 0.0
+        self._offset = clock_offset
         self._actions: list[tuple] = []
 
     def now(self) -> float:
-        return self._now
+        """Локальные часы стороны. У клиента и сервера разное неизвестное смещение."""
+        return self._now + self._offset
 
     def send(self, data: bytes) -> None:
         if not isinstance(data, (bytes, bytearray, memoryview)):
@@ -48,12 +50,12 @@ class Env:
         self._actions.append(("reply", op_id, result))
 
 
-def main(conn, side: str, candidate_dir: str, config: dict, tree_spec: dict | None) -> None:
+def main(conn, side: str, candidate_dir: str, config: dict, tree_spec: dict | None, clock_offset: float = 0.0) -> None:
     devnull = os.open(os.devnull, os.O_WRONLY)
     os.dup2(devnull, 1)
     sys.stdout = open(os.devnull, "w")
     try:
-        env = Env(side)
+        env = Env(side, clock_offset)
         fs = None
         memfs = None
         if side == "server":

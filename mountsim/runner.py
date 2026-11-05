@@ -15,6 +15,7 @@ import heapq
 import itertools
 import json
 import multiprocessing as mp
+import random
 import time
 from pathlib import Path
 
@@ -25,7 +26,7 @@ from .oracle import Oracle
 from .scenario import build_scenario
 from .tree import build_tree
 
-VERSION = "mountsim-v1"
+VERSION = "mountsim-v2"
 CALL_TIMEOUT = 10.0  # реальных секунд на один вызов кандидата
 START_TIMEOUT = 60.0  # реальных секунд на запуск процессов
 WALL_LIMIT = 300.0  # реальных секунд на экземпляр
@@ -43,11 +44,11 @@ class CandidateFailure(Exception):
 
 
 class Side:
-    def __init__(self, ctx, side: str, candidate_dir: Path, config: dict, tree_spec: dict | None):
+    def __init__(self, ctx, side: str, candidate_dir: Path, config: dict, tree_spec: dict | None, clock_offset: float):
         self.side = side
         self.conn, child = ctx.Pipe()
         self.proc = ctx.Process(
-            target=worker.main, args=(child, side, str(candidate_dir), config, tree_spec), daemon=True
+            target=worker.main, args=(child, side, str(candidate_dir), config, tree_spec, clock_offset), daemon=True
         )
         self.proc.start()
         child.close()
@@ -99,7 +100,9 @@ class Simulation:
         self.now = 0.0
         self.heap: list = []
         self.seq = itertools.count()
-        self.links = {"client": Link(profile), "server": Link(profile)}  # по стороне-отправителю
+        # по стороне-отправителю; джиттер из системного генератора, протокол его не предскажет
+        noise = random.Random(random.SystemRandom().getrandbits(64))
+        self.links = {"client": Link(profile, noise), "server": Link(profile, noise)}
         self.i = 0
         self.pending: tuple[int, dict, float] | None = None
         self.op_ids = itertools.count(1)
@@ -227,8 +230,9 @@ def run_instance(spec: dict, candidate_dir: str | Path) -> dict:
     sides: dict[str, Side] = {}
     sim = None
     try:
-        sides["client"] = Side(ctx, "client", Path(candidate_dir), config, None)
-        sides["server"] = Side(ctx, "server", Path(candidate_dir), config, spec["tree"])
+        clocks = random.SystemRandom()
+        sides["client"] = Side(ctx, "client", Path(candidate_dir), config, None, clocks.uniform(1e6, 2e6))
+        sides["server"] = Side(ctx, "server", Path(candidate_dir), config, spec["tree"], clocks.uniform(1e6, 2e6))
         tree = build_tree(spec["tree"])
         steps = build_scenario(tree, spec["scenario"], read_only)
         oracle = Oracle(tree.fs, staleness, read_only)

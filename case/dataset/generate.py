@@ -31,7 +31,7 @@ LOSS = [0.0, 0.01]
 BANDWIDTH_MBIT = 50
 STALENESS = 1.0
 BASELINE = ROOT / "case" / "ways" / "baseline"
-FORMAT = "ar02-v1"
+FORMAT = "ar02-v2"
 
 
 def make_examples(split: str, seed: int, trees: int) -> list[dict]:

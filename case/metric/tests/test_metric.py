@@ -26,7 +26,7 @@ SMALL_TREE = 6  # 109 файлов, тесты идут секунды
 
 def spec(kind: str, rtt: int = 20, loss: float = 0.0, content_seed: int = 1, seed: int = 7) -> dict:
     return {
-        "format": "ar02-v1",
+        "format": "ar02-v2",
         "tree": {"seed": SMALL_TREE, "content_seed": content_seed},
         "scenario": {"kind": kind, "seed": seed},
         "profile": {"rtt_ms": rtt, "loss": loss, "bandwidth_mbit": 50},
@@ -38,7 +38,7 @@ def spec(kind: str, rtt: int = 20, loss: float = 0.0, content_seed: int = 1, see
 def example_for(s: dict) -> dict:
     report = run_instance(s, BASELINE)
     assert report["ok"], report["violations"]
-    ref = {"baseline_total": report["total"], "ops": report["ops"], "final_digest": report["final_digest"], "format": "ar02-v1"}
+    ref = {"baseline_total": report["total"], "ops": report["ops"], "final_digest": report["final_digest"], "format": "ar02-v2"}
     return {"id": "t", "input": json.dumps(s), "reference": json.dumps(ref)}
 
 
@@ -62,7 +62,7 @@ def walk_example():
 
 def fake_report(example: dict, total: float, **over) -> str:
     ref = json.loads(example["reference"])
-    rep = {"version": "mountsim-v1", "ok": True, "violations": [], "total": total, "ops": ref["ops"], "final_digest": ref["final_digest"], "cpu_client": 0.0, "cpu_server": 0.0}
+    rep = {"version": "mountsim-v2", "ok": True, "violations": [], "total": total, "ops": ref["ops"], "final_digest": ref["final_digest"], "cpu_client": 0.0, "cpu_server": 0.0}
     rep.update(over)
     return json.dumps(rep)
 

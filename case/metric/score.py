@@ -14,8 +14,8 @@ import json
 import math
 import sys
 
-FORMAT = "ar02-v1"
-REPORT_VERSION = "mountsim-v1"
+FORMAT = "ar02-v2"
+REPORT_VERSION = "mountsim-v2"
 PENALTY = -10.0
 MIN_TOTAL = 0.001  # пол на время экземпляра, с
 
