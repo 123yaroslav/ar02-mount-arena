@@ -25,12 +25,12 @@ import matplotlib.pyplot as plt  # noqa: E402
 INK, MUTED, GRID, SURFACE, SERIES = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb", "#2a78d6"
 
 
-def curve(entries: list[dict], baseline: float, limit: int, key: str) -> tuple[list[float], float]:
+def curve(entries: list[dict], baseline: float, limit: int, key: str, valid_key: str = "valid") -> tuple[list[float], float]:
     best = baseline
     values = []
     for i in range(1, limit + 1):
         for e in entries:
-            if e["order"] == i and e.get("valid") and e.get(key) is not None:
+            if e["order"] == i and e.get(valid_key) and e.get(key) is not None:
                 best = max(best, float(e[key]))
         values.append(best)
     auc = baseline + sum(values[:-1])  # шаг от 0 до 1 держит baseline, дальше значения после событий
@@ -43,10 +43,11 @@ def main() -> None:
     p.add_argument("--limit", type=int, required=True)
     p.add_argument("--baseline", type=float, default=1.0)
     p.add_argument("--key", default="public")
+    p.add_argument("--valid-key", default="valid")
     p.add_argument("--out", type=Path)
     a = p.parse_args()
     entries = [json.loads(line) for line in a.journal.read_text().splitlines() if line.strip()]
-    values, auc = curve(entries, a.baseline, a.limit, a.key)
+    values, auc = curve(entries, a.baseline, a.limit, a.key, a.valid_key)
     print(json.dumps({"key": a.key, "curve": values, "auc": auc, "mean_quality": auc / a.limit, "final_quality": values[-1]}))
     if a.out:
         xs = [0] + list(range(1, a.limit + 1))
@@ -56,8 +57,8 @@ def main() -> None:
         ax.set_facecolor(SURFACE)
         ax.step(xs + [a.limit + 0.0001], ys + [ys[-1]], where="post", color=SERIES, linewidth=2)
         for e in entries:
-            y = float(e[a.key]) if e.get("valid") and e.get(a.key) is not None else 0.0
-            ax.plot([e["order"]], [y], marker="o", markersize=7, color=SERIES if e.get("valid") else MUTED, markeredgecolor=SURFACE, markeredgewidth=2)
+            y = float(e[a.key]) if e.get(a.valid_key) and e.get(a.key) is not None else 0.0
+            ax.plot([e["order"]], [y], marker="o", markersize=7, color=SERIES if e.get(a.valid_key) else MUTED, markeredgecolor=SURFACE, markeredgewidth=2)
             ax.annotate(e["id"], (e["order"], y), textcoords="offset points", xytext=(6, -12), fontsize=7, color=MUTED)
         ax.set_xlabel("номер предложенного решения", color=MUTED, fontsize=8)
         ax.set_ylabel(f"лучший {a.key}, ускорение", color=MUTED, fontsize=8)

@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import heapq
 import itertools
 import json
@@ -91,7 +92,7 @@ def _short(state: tuple) -> tuple:
 
 
 class Simulation:
-    def __init__(self, sides: dict[str, Side], steps: list[dict], oracle: Oracle, profile: Profile, staleness: float, started: float):
+    def __init__(self, sides: dict[str, Side], steps: list[dict], oracle: Oracle, profile: Profile, staleness: float, started: float, noise: random.Random):
         self.sides = sides
         self.steps = steps
         self.oracle = oracle
@@ -100,8 +101,7 @@ class Simulation:
         self.now = 0.0
         self.heap: list = []
         self.seq = itertools.count()
-        # по стороне-отправителю; джиттер из системного генератора, протокол его не предскажет
-        noise = random.Random(random.SystemRandom().getrandbits(64))
+        # по стороне-отправителю
         self.links = {"client": Link(profile, noise), "server": Link(profile, noise)}
         self.i = 0
         self.pending: tuple[int, dict, float] | None = None
@@ -230,15 +230,17 @@ def run_instance(spec: dict, candidate_dir: str | Path) -> dict:
     sides: dict[str, Side] = {}
     sim = None
     try:
-        clocks = random.SystemRandom()
-        sides["client"] = Side(ctx, "client", Path(candidate_dir), config, None, clocks.uniform(1e6, 2e6))
-        sides["server"] = Side(ctx, "server", Path(candidate_dir), config, spec["tree"], clocks.uniform(1e6, 2e6))
+        # Джиттер и смещения часов выводятся из хеша всего входа. Прогон воспроизводим,
+        # а протокол их не предскажет: клиент не видит вход, сервер не знает сид сценария.
+        noise = random.Random(hashlib.sha256(("noise:" + json.dumps(spec, sort_keys=True)).encode()).digest())
+        sides["client"] = Side(ctx, "client", Path(candidate_dir), config, None, noise.uniform(1e6, 2e6))
+        sides["server"] = Side(ctx, "server", Path(candidate_dir), config, spec["tree"], noise.uniform(1e6, 2e6))
         tree = build_tree(spec["tree"])
         steps = build_scenario(tree, spec["scenario"], read_only)
         oracle = Oracle(tree.fs, staleness, read_only)
         for side in sides.values():
             side.wait_ready()
-        sim = Simulation(sides, steps, oracle, profile, staleness, started)
+        sim = Simulation(sides, steps, oracle, profile, staleness, started, noise)
         sim.run()
         snapshot = sim.final_check()
         report["final_digest"] = digest(json.dumps(snapshot, sort_keys=True).encode())
