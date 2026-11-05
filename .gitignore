@@ -1,0 +1,10 @@
+__pycache__/
+# private и public держит оценщик, не коммитить
+*.private.jsonl
+*.public.jsonl
+.venv/
+.pytest_cache/
+.ruff_cache/
+results/raw/
+*.pkl
+.DS_Store

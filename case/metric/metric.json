@@ -1,0 +1,15 @@
+{
+  "kind": "command",
+  "direction": "maximize",
+  "version": "ar02-mount-speedup-v1",
+  "command": {
+    "argv": ["python", "score.py"],
+    "uses_model": false,
+    "timeout_seconds": 60
+  },
+  "aggregation": {
+    "argv": ["python", "aggregate.py"],
+    "uses_model": false,
+    "timeout_seconds": 60
+  }
+}

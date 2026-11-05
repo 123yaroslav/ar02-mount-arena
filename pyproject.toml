@@ -1,0 +1,20 @@
+[project]
+name = "ar02-mount-arena"
+version = "0.1.0"
+description = "AR-02: протокол монтирования workdir, выращенный на арене"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest==8.4.2", "ruff==0.13.3", "matplotlib==3.10.7"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "case/metric/tests"]
+pythonpath = [".", "case/metric/tests"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
