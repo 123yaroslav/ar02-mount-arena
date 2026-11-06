@@ -19,6 +19,14 @@ V1, V2 = "#2a78d6", "#eb6834"
 INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 
 
+def short_reason(reason: str) -> str:
+    if "падение сервера" in reason:
+        return "на v2 падает на 256 из 384"
+    if "устаревший" in reason:
+        return "на v2 одно устаревшее чтение на train"
+    return "на v2 не допущен"
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("journal", type=Path)
@@ -34,19 +42,20 @@ def main() -> None:
     for i, r in enumerate(rows):
         v1 = math.log2(r["public_v1"])
         ax.barh(i - h / 2, v1, height=h * 0.9, color=V1, label="симулятор v1" if i == 0 else None)
-        ax.text(v1 + 0.06, i - h / 2, f"{r['public_v1']:.2f}".replace(".", ","), va="center", fontsize=7, color=MUTED)
+        ax.text(v1 + 0.06, i - h / 2, f"{r['public_v1']:.2f}".replace(".", ","), va="center", fontsize=11, color=MUTED,
+                bbox={"facecolor": SURFACE, "edgecolor": "none", "pad": 1.5})
         if r["valid_v2"]:
             v2 = math.log2(r["public_v2"])
             ax.barh(i + h / 2, v2, height=h * 0.9, color=V2, label="симулятор v2" if i == 0 else None)
-            ax.text(v2 + 0.06, i + h / 2, f"{r['public_v2']:.2f}".replace(".", ","), va="center", fontsize=7, color=MUTED)
+            ax.text(v2 + 0.06, i + h / 2, f"{r['public_v2']:.2f}".replace(".", ","), va="center", fontsize=11, color=MUTED)
         else:
-            ax.text(math.log2(a.classic) + 0.12, i + h / 2, f"на v2 не допущен, {r['v2_reason']}", va="center", fontsize=7, color=INK)
+            ax.text(math.log2(a.classic) + 0.12, i + h / 2, short_reason(r["v2_reason"]), va="center", fontsize=11, color=INK)
     ax.axvline(math.log2(a.classic), color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
-    ax.text(math.log2(a.classic) + 0.05, -0.62, f"классический протокол на v2, {a.classic:.2f}".replace(".", ","), fontsize=7, color=MUTED)
+    ax.text(math.log2(a.classic) + 0.05, -0.62, f"классический протокол на v2, {a.classic:.2f}".replace(".", ","), fontsize=11, color=MUTED)
     ax.axvline(0, color=INK, linewidth=0.8)
-    ax.set_yticks(range(len(rows)), [f"{r['order']}. {r['id']}" for r in rows], fontsize=9, color=INK)
+    ax.set_yticks(range(len(rows)), [f"{r['order']}. {r['id']}" for r in rows], fontsize=14, color=INK)
     ticks = [0, 1, 2, 3, 4, 5]
-    ax.set_xticks(ticks, [f"x{2 ** t}" for t in ticks], fontsize=8, color=MUTED)
+    ax.set_xticks(ticks, [f"x{2 ** t}" for t in ticks], fontsize=12, color=MUTED)
     ax.set_xlim(-0.1, 5.6)
     ax.grid(axis="x", color=GRID, linewidth=0.6)
     ax.set_axisbelow(True)
@@ -54,9 +63,9 @@ def main() -> None:
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
     ax.tick_params(length=0)
-    ax.set_xlabel("столбцы это ускорение относительно baseline на public при симуляторе v1 (логарифмическая шкала)", fontsize=8, color=MUTED)
+    ax.set_xlabel("ускорение на public при симуляторе v1, логарифмическая шкала", fontsize=12, color=MUTED)
     if any(r["valid_v2"] for r in rows):
-        ax.legend(frameon=False, fontsize=8, loc="lower right")
+        ax.legend(frameon=False, fontsize=12, loc="lower right")
     ax.set_ylim(len(rows) - 0.4, -0.8)
     fig.tight_layout(pad=1.2)
     a.out.parent.mkdir(parents=True, exist_ok=True)

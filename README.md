@@ -54,6 +54,7 @@ uv run python scripts/ablation.py results/validation-opus/candidates/r1-c1 --tre
 uv run python scripts/container_check.py case/ways/classic --ids train-t02-grep-rtt200-loss1           # запуск как в runner арены, нужен Docker
 uv run python scripts/plot_results.py --out results/figures/speedup_by_kind.png "классический протокол=results/v2/classic/train.jsonl"
 uv run python scripts/plot_validation.py results/validation-opus/journal.jsonl --out results/figures/validation_v1_v2.png
+uv run python scripts/plot_ablation.py results/checks/ablation.jsonl --out results/figures/ablation_r1c1.png
 uv run python scripts/check_candidate.py case/ways/<кандидат>
 uv run python scripts/collect_repo_stats.py --per-language 8 --out mountsim/data/repo_stats.json   # нужен gh
 ```
