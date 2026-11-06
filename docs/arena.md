@@ -65,8 +65,25 @@ Private принимает пакет один раз. Повтор того ж�
 
 ```bash
 uv sync --frozen && uv run python -m evaluator.smoke && uv run pytest -q
-# результат: TODO
 ```
+
+Запуск 06.11.2026 на macOS 26 (Apple Silicon), арена на коммите `669d9ed` от 03.11.2026, Python 3.12.12, Docker Desktop с Compose v2.39.1.
+
+```
+smoke passed: single answers, configurable criterion votes, sealed private, multiple outputs, score-only public, prepared metric across splits, model-free usage
+4 failed, 1746 passed, 1 warning in 32.20s
+```
+
+Smoke прошел целиком. Четыре упавших теста из 1750 связаны с macOS и Docker Desktop, а не с логикой арены. Причину каждого я проверил отдельно.
+
+| Тест | Причина |
+|---|---|
+| `test_build.py::test_republishing_legacy_build_output_preserves_receipt_binding` | на macOS digest сборки совпал с legacy-значением, зашитым в тест, и тест переименовывает каталог только для чтения сам в себя. Linux такое переименование пропускает, macOS отвечает EACCES |
+| `test_client.py::test_pack_handles_deep_empty_directories` | тест строит 1100 вложенных каталогов, а на macOS путь ограничен 1024 байтами (`PC_PATH_MAX`) |
+| `test_deployment_search.py::test_standard_compose_passes_campaign_guard_and_shared_mounts` | Compose из Docker Desktop выбрасывает `create_host_path: false` из отрендеренного конфига, это видно на минимальном compose-файле |
+| `test_search.py::test_unencodable_filename_retains_resources_and_ancestry` | APFS не принимает имена файлов не в UTF-8 (Errno 92) |
+
+Основная кампания пойдет в Linux-контейнерах арены, там этих ограничений нет.
 
 `evaluator.smoke` идет на вымышленных входах без моделей. Он проверяет один ответ на пример, запечатанный private с 7 финалистами и 6 лучшими, отказ для пакета неверного размера, public с одним score и нулевые токены немодельного решения. `pytest -q` гоняет тесты ядра.
 
