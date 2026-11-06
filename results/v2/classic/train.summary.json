@@ -1,0 +1,14 @@
+{
+ "score": 1.7353724484179969,
+ "metric_version": "ar02-mount-speedup-v2",
+ "data": "train.jsonl",
+ "data_sha256": "d6bbe0398eaea9034cfe77dffbe7ec41671413d8b3a006406b05435f825bcfd5",
+ "examples": 384,
+ "candidate_sha256": "204ed7c2a9aab22bfcc318611daea148605409e77454d6e32ef4bac85874b787",
+ "solver_tokens": 0,
+ "solver_seconds": 439.002,
+ "solver_unreported_attempts": 0,
+ "judge_tokens": 0,
+ "judge_seconds": 10.976,
+ "judge_unreported_attempts": 0
+}

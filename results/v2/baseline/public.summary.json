@@ -1,0 +1,7 @@
+{
+ "score": 1.0012846515951725,
+ "metric_version": "ar02-mount-speedup-v2",
+ "data": "public.jsonl",
+ "examples": 192,
+ "candidate_sha256": "96538c6f36f0c8c135215b485776e04abb852889c17b777fb993bf7fb7608dda"
+}

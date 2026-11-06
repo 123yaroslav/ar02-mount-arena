@@ -7,7 +7,7 @@
 Замер на train.
 
 ```bash
-uv run python scripts/evaluate.py --candidate case/ways/<id> --data case/dataset/train.jsonl --out results/<id>/train.jsonl
+uv run python scripts/evaluate.py --candidate case/ways/<id> --data case/dataset/train.jsonl --out results/v2/<id>/train.jsonl
 ```
 
 Train открыт полностью, можно делать свои подвыборки (`--limit`, свой JSONL) и смотреть отчеты по экземплярам. Public возвращает только общий score через оценщик. Private не возвращает ничего.

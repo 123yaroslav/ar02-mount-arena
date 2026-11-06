@@ -1,0 +1,65 @@
+{
+  "case": "ar02",
+  "format": "ar02-v2",
+  "dataset_version": "2",
+  "simulator_version": "mountsim-v2",
+  "metric_version": "ar02-mount-speedup-v2",
+  "generator": "case/dataset/generate.py",
+  "source_stats": "mountsim/data/repo_stats.json",
+  "family": "tree",
+  "split_rule": "split получает целые деревья, деревья split порождает random.Random(f'{split}:{seed}')",
+  "grid": {
+    "scenarios": [
+      "walk",
+      "grep",
+      "small_reads",
+      "big_file",
+      "writes",
+      "session"
+    ],
+    "read_only_scenarios": [
+      "walk",
+      "grep"
+    ],
+    "rtt_ms": [
+      1,
+      20,
+      80,
+      200
+    ],
+    "loss": [
+      0.0,
+      0.01
+    ],
+    "bandwidth_mbit": 50,
+    "staleness_seconds": 1.0
+  },
+  "splits": {
+    "train": {
+      "trees": 8,
+      "examples": 384,
+      "seed": 1,
+      "file": "train.jsonl",
+      "sha256": "d6bbe0398eaea9034cfe77dffbe7ec41671413d8b3a006406b05435f825bcfd5"
+    },
+    "public": {
+      "trees": 4,
+      "examples": 192,
+      "seed": "у оператора, вне репозитория",
+      "file": "у оператора, вне репозитория",
+      "generated": "2026-11-06",
+      "sha256": "8cfd98f26d68f3110a832fd80f2d997e3ab898276bfffb49de611d5feb46dd63"
+    },
+    "private": {
+      "trees": 6,
+      "examples": 288,
+      "seed": "у оператора, вне репозитория",
+      "file": "у оператора, вне репозитория",
+      "generated": "2026-11-06",
+      "sha256": "cfabc259ad06ece499dd9b8fdc31acbd22ecdb1cf89668418152f3a6c97246d4",
+      "evaluated": false
+    }
+  },
+  "reference": "baseline_total, ops и final_digest от прогона case/ways/baseline на той же машине, где идет оценка. baseline_total включает процессорное время, поэтому при переносе на другую машину или при смене метрики эталоны всех split пересчитываются, а хеши здесь обновляются",
+  "hash_note": "хеш файла, а не сида. Короткий сид перебирается по своему хешу, а файл с шумными эталонами по хешу не восстановить"
+}

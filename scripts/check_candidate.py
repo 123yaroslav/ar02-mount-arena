@@ -1,6 +1,7 @@
 """Проверка области изменений кандидата до оценки.
 
 Кандидат может менять только protocol/client.py, protocol/server.py и NOTES.md.
+README.md допускается, он описывает способ и в оценке не участвует.
 solve.py должен совпадать с baseline байт в байт. Код протокола не должен трогать
 раннер, процессы, сокеты и файлы сандбокса. Это дешевая проверка, ревьюер смотрит дифф.
 
@@ -16,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / "case" / "ways" / "baseline"
-ALLOWED = {"solve.py", "NOTES.md", "protocol/__init__.py", "protocol/client.py", "protocol/server.py"}
+ALLOWED = {"solve.py", "NOTES.md", "README.md", "protocol/__init__.py", "protocol/client.py", "protocol/server.py"}
 FORBIDDEN = [
     r"\bmountsim\b", r"\bsubprocess\b", r"\bmultiprocessing\b", r"\bthreading\b", r"\bctypes\b", r"\bsocket\b",
     r"\bimportlib\b", r"__import__", r"\bgc\b", r"\binspect\b", r"sys\.modules", r"\bos\.", r"\bopen\(",

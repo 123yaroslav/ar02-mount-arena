@@ -1,0 +1,17 @@
+{"candidate": "baseline", "split": "train", "jobs": 9, "score": 0.9904, "when": "06.11 ночью, машина нагружена прогонами кампании"}
+{"candidate": "baseline", "split": "train", "jobs": 9, "score": 0.9998, "when": "06.11 днем, машина свободна"}
+{"candidate": "baseline", "split": "public", "jobs": 9, "score": 0.9940, "when": "06.11 ночью, машина нагружена"}
+{"candidate": "baseline", "split": "public", "jobs": 9, "score": 1.0013, "when": "06.11 днем"}
+{"candidate": "baseline", "split": "public", "jobs": 4, "score": 1.0080, "when": "06.11 днем"}
+{"candidate": "classic", "split": "train", "jobs": 9, "score": 1.7179, "when": "06.11 ночью, машина нагружена"}
+{"candidate": "classic", "split": "train", "jobs": 9, "score": 1.7354, "when": "06.11 днем"}
+{"candidate": "classic", "split": "public", "jobs": 9, "score": 1.7470, "when": "06.11 ночью, машина нагружена"}
+{"candidate": "classic", "split": "public", "jobs": 9, "score": 1.7589, "when": "06.11 днем"}
+{"candidate": "classic", "split": "public", "jobs": 4, "score": 1.7721, "when": "06.11 днем"}
+{"candidate": "r1-c2", "split": "public", "jobs": 9, "score": 2.1940, "when": "06.11 ночью, машина нагружена"}
+{"candidate": "r1-c2", "split": "public", "jobs": 9, "score": 2.2584, "when": "06.11 днем"}
+{"candidate": "r1-c2", "split": "public", "jobs": 9, "score": 2.3019, "when": "06.11 днем, повтор"}
+{"candidate": "r1-c2", "split": "public", "jobs": 9, "score": 2.2844, "when": "06.11 днем, повтор"}
+{"candidate": "r1-c2", "split": "public", "jobs": 4, "score": 2.4398, "when": "06.11 днем"}
+{"candidate": "r1-c1", "split": "public", "jobs": 9, "score": 2.1970, "when": "06.11 ночью, машина нагружена"}
+{"candidate": "r1-c1", "split": "public", "jobs": 9, "score": 2.2850, "when": "06.11 днем"}

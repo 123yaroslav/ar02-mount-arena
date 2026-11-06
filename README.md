@@ -13,11 +13,11 @@ LLM-агент работает в удаленной песочнице, а п�
 | | Train | Public | Private |
 |---|---|---|---|
 | Baseline, один запрос на операцию | 1,00 | 1,00 | будет на ЧП3 |
-| Классический протокол, кэш с уведомлениями и READDIRPLUS | 1,72 | 1,75 | будет на ЧП3 |
-| Лучший из проверочной кампании на Opus, r1-c2 | 0, одно нарушение | 2,19 | не допущен |
+| Классический протокол, кэш с уведомлениями, READDIRPLUS, файл целиком | 1,74 | 1,76 | будет на ЧП3 |
+| Кандидаты r1 проверочной кампании на Opus | 0, одно нарушение | 2,2-2,4 | не допущены |
 | Выращенное решение | основная кампания после ЧП1 | | будет на ЧП3 |
 
-Цифры для симулятора v2. Версию v2 я сделал после проверочной кампании на Opus. Ее лучшие кандидаты опирались на детерминированную сеть, общие часы клиента и сервера и слишком повторяющийся текст генератора, подробности в [evolution.md](docs/evolution.md), [ADR-0007](docs/adr/0007-jitter-and-clocks.md) и [ADR-0008](docs/adr/0008-text-realism.md).
+Цифры для симулятора v2 при 9 параллельных прогонах на одной машине. Повторный прогон меняет итог baseline и классики на 1-1,5%, тяжелых по CPU кандидатов сильнее, поэтому для r1 дан диапазон ([ADR-0009](docs/adr/0009-cpu-time.md)). Версию v2 я сделал после проверочной кампании на Opus. Ее лучшие кандидаты опирались на детерминированную сеть и общие часы клиента и сервера, а генератор текста повторял строки чаще настоящего кода, подробности в [evolution.md](docs/evolution.md), [ADR-0007](docs/adr/0007-jitter-and-clocks.md) и [ADR-0008](docs/adr/0008-text-realism.md).
 
 Основная кампания еще не запускалась. Лимит предложенных решений в ней 30, условия в [campaign.md](case/campaign/campaign.md).
 
@@ -33,7 +33,7 @@ docs/arena.md       как устроена арена и чем моя уста
 docs/adr/           решения по методологии, метрике, данным и изоляции
 docs/evolution.md   разбор эволюции
 docs/talk.md        план рассказа
-results/            сырые результаты оценок
+results/            результаты оценок, журнал проверочной кампании, проверки (шум, абляция, контейнер)
 scripts/            сбор статистики репозиториев, оценка кандидата, проверка области изменений
 skill/              итоговый навык (к ЧП3)
 ```
@@ -44,16 +44,22 @@ skill/              итоговый навык (к ЧП3)
 
 ```bash
 uv sync
-uv run pytest                                   # 42 теста: сеть, папка, генератор, метрика, 9 жульнических кандидатов
+uv run pytest                                   # 47 тестов: сеть, папка, генератор, данные, метрика, 9 жульнических и сломанных кандидатов
 uv run python case/dataset/generate.py --split train --seed 1 --trees 8 --reference --out case/dataset/train.jsonl
-uv run python scripts/evaluate.py --candidate case/ways/baseline --data case/dataset/train.jsonl
-uv run python scripts/evaluate.py --candidate case/ways/classic --data case/dataset/train.jsonl
+uv run python scripts/evaluate.py --candidate case/ways/baseline --data case/dataset/train.jsonl --jobs 9 --out results/v2/baseline/train.jsonl
+uv run python scripts/evaluate.py --candidate case/ways/classic --data case/dataset/train.jsonl --jobs 9 --out results/v2/classic/train.jsonl
+uv run python scripts/evaluate.py --candidate results/validation-opus/candidates/r1-c2 --data case/dataset/train.jsonl --jobs 9 --out results/v2/r1-c2/train.jsonl
+uv run python scripts/curve.py results/validation-opus/journal.jsonl --limit 4 --key public_v1 --valid-key valid_v1 --out results/figures/curve_validation_v1.png
+uv run python scripts/ablation.py results/validation-opus/candidates/r1-c1 --trees t00,t03 --jobs 9     # абляция джиттера и часов
+uv run python scripts/container_check.py case/ways/classic --ids train-t02-grep-rtt200-loss1           # запуск как в runner арены, нужен Docker
+uv run python scripts/plot_results.py --out results/figures/speedup_by_kind.png "классический протокол=results/v2/classic/train.jsonl"
+uv run python scripts/plot_validation.py results/validation-opus/journal.jsonl --out results/figures/validation_v1_v2.png
 uv run python scripts/check_candidate.py case/ways/<кандидат>
 uv run python scripts/collect_repo_stats.py --per-language 8 --out mountsim/data/repo_stats.json   # нужен gh
 ```
 
-Public и private генерирует оператор тем же скриптом с сидом из файла вне репозитория (`--seed-file`). В арену кейс подключается так. Каталог `mountsim/` кладется в `/assets`, `case/` копируется в `cases/ar02` репозитория арены, кандидатом служит каталог из `case/ways/`.
+Оценка пишет рядом с результатами `*.summary.json` с баллом, версией метрики, хешами данных и кандидата и расходами. Public и private генерирует оператор тем же скриптом с сидом из файла вне репозитория (`--seed-file`), public оценивается той же командой с флагом `--quiet`. В арену кейс подключается так. Каталог `mountsim/` кладется в `/assets`, `case/` копируется в `cases/ar02` репозитория арены, кандидатом служит каталог из `case/ways/`.
 
 ## Модели
 
-Решатель и метрика работают без LLM. Модель нужна только исследователям арены. Проверочный прогон 06.11.2026 шел на Claude Opus, потому что доступ к моделям курса выдают с пятницы. Основная кампания пойдет на модели курса (DeepSeek 4.x), версия и Intelligence Index будут записаны в [campaign.md](case/campaign/campaign.md) в день запуска.
+Решатель и метрика работают без LLM. Модель нужна только исследователям арены. Проверочный прогон 06.11.2026 шел на Claude Opus 5.5 (`claude-opus-5-5`), потому что доступ к моделям курса выдают с пятницы. Основная кампания пойдет на модели курса (DeepSeek 4.x), версия и Intelligence Index будут записаны в [campaign.md](case/campaign/campaign.md) в день запуска.

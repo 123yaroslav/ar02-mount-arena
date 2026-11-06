@@ -1,7 +1,7 @@
 """График ускорения по сценариям для нескольких кандидатов.
 
 uv run python scripts/plot_results.py --out results/figures/speedup_by_kind.png \
-    "классический=results/classic/train.jsonl" "r1-c2=results/validation-opus/r1-c2/train.jsonl"
+    "классический протокол=results/v2/classic/train.jsonl"
 """
 
 from __future__ import annotations
@@ -67,8 +67,12 @@ def main() -> None:
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
     ax.tick_params(length=0)
-    ax.set_xlabel("ускорение относительно baseline на train, симулятор v2 (логарифмическая шкала)", color=MUTED, fontsize=8)
-    ax.legend(frameon=False, fontsize=8, loc="lower right", labelcolor=INK)
+    title = "ускорение относительно baseline на train, симулятор v2 (логарифмическая шкала)"
+    if len(data) == 1:
+        title = f"{data[0][0]}, {title}"
+    else:
+        ax.legend(frameon=False, fontsize=8, loc="lower right", labelcolor=INK)
+    ax.set_xlabel(title, color=MUTED, fontsize=8)
     fig.tight_layout(pad=1.2)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(a.out, facecolor=SURFACE)

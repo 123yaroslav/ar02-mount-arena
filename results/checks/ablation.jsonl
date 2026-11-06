@@ -1,0 +1,8 @@
+{"candidate": "r1-c1", "trees": ["t00", "t03"], "jitter": true, "clock_offsets": true, "examples": 96, "invalid": 0, "speedup_on_valid": 3.203}
+{"candidate": "r1-c1", "trees": ["t00", "t03"], "jitter": false, "clock_offsets": true, "examples": 96, "invalid": 0, "speedup_on_valid": 3.199}
+{"candidate": "r1-c1", "trees": ["t00", "t03"], "jitter": true, "clock_offsets": false, "examples": 96, "invalid": 0, "speedup_on_valid": 22.546}
+{"candidate": "r1-c1", "trees": ["t00", "t03"], "jitter": false, "clock_offsets": false, "examples": 96, "invalid": 0, "speedup_on_valid": 23.629}
+{"candidate": "r2-c2", "trees": ["t00", "t03"], "jitter": true, "clock_offsets": true, "examples": 96, "invalid": 64, "speedup_on_valid": 1.057}
+{"candidate": "r2-c2", "trees": ["t00", "t03"], "jitter": false, "clock_offsets": true, "examples": 96, "invalid": 50, "speedup_on_valid": 1.187}
+{"candidate": "r2-c2", "trees": ["t00", "t03"], "jitter": true, "clock_offsets": false, "examples": 96, "invalid": 62, "speedup_on_valid": 1.203}
+{"candidate": "r2-c2", "trees": ["t00", "t03"], "jitter": false, "clock_offsets": false, "examples": 96, "invalid": 0, "speedup_on_valid": 2.238}

@@ -22,7 +22,8 @@ INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("journal", type=Path)
-    p.add_argument("--classic", type=float, default=1.747, help="классический протокол на public v2")
+    classic = json.loads((Path(__file__).resolve().parents[1] / "results" / "v2" / "classic" / "public.summary.json").read_text())["score"]
+    p.add_argument("--classic", type=float, default=classic, help="классический протокол на public v2")
     p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
     rows = [json.loads(line) for line in a.journal.read_text().splitlines() if line.strip()]
@@ -41,7 +42,7 @@ def main() -> None:
         else:
             ax.text(math.log2(a.classic) + 0.12, i + h / 2, f"на v2 не допущен, {r['v2_reason']}", va="center", fontsize=7, color=INK)
     ax.axvline(math.log2(a.classic), color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
-    ax.text(math.log2(a.classic) + 0.05, -0.62, "классический протокол на v2, 1,75", fontsize=7, color=MUTED)
+    ax.text(math.log2(a.classic) + 0.05, -0.62, f"классический протокол на v2, {a.classic:.2f}".replace(".", ","), fontsize=7, color=MUTED)
     ax.axvline(0, color=INK, linewidth=0.8)
     ax.set_yticks(range(len(rows)), [f"{r['order']}. {r['id']}" for r in rows], fontsize=9, color=INK)
     ticks = [0, 1, 2, 3, 4, 5]
