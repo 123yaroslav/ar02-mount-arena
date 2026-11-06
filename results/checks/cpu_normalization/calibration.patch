@@ -1,0 +1,52 @@
+--- a/mountsim/worker.py	2026-11-06 01:11:16
++++ b/mountsim/worker.py	2026-11-06 11:23:51
+@@ -20,6 +20,18 @@
+     return ru.ru_utime + ru.ru_stime
+ 
+ 
++def _calibrate() -> float:
++    """CPU-время фиксированной нагрузки на чистом Python, около 30 мс."""
++    import hashlib
++    t = _cpu()
++    acc = {}
++    data = b"x" * 4096
++    for i in range(6000):
++        acc[i % 997] = hashlib.md5(data + i.to_bytes(4, "little")).digest()[:4]
++        _ = sorted(acc.values())[:3] if i % 500 == 0 else None
++    return _cpu() - t
++
++
+ class Env:
+     """То, что протокол может делать с окружением. Время виртуальное."""
+ 
+@@ -65,6 +77,7 @@
+             fs = LocalFS(memfs, read_only=config["read_only"], clock=env.now)
+         sys.path.insert(0, candidate_dir)
+         module = importlib.import_module(f"protocol.{side}")
++        cal_start = _calibrate()
+         cpu_start = _cpu()
+         if side == "client":
+             obj = module.Client(env, dict(config))
+@@ -96,7 +109,8 @@
+             elif kind == "snapshot":
+                 conn.send(("done", memfs.snapshot()))  # type: ignore[union-attr]
+             elif kind == "cpu":
+-                conn.send(("done", _cpu() - cpu_start))
++                raw = _cpu() - cpu_start
++                conn.send(("done", (raw, (cal_start + _calibrate()) / 2)))
+             elif kind == "exit":
+                 return
+         except FSError as e:
+--- a/mountsim/runner.py	2026-11-06 01:42:10
++++ b/mountsim/runner.py	2026-11-06 11:23:51
+@@ -244,8 +244,8 @@
+         sim.run()
+         snapshot = sim.final_check()
+         report["final_digest"] = digest(json.dumps(snapshot, sort_keys=True).encode())
+-        report["cpu_client"] = sides["client"].request("cpu")
+-        report["cpu_server"] = sides["server"].request("cpu")
++        report["cpu_client"], report["cal_client"] = sides["client"].request("cpu")
++        report["cpu_server"], report["cal_server"] = sides["server"].request("cpu")
+         report["ok"] = True
+     except Violation as v:
+         report["violations"].append(str(v))

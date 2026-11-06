@@ -1,0 +1,10 @@
+{"run": "baseline_j4_a", "valid": 192, "raw": 1.0097, "normalized": 1.0, "median_cal_ms": 35.8}
+{"run": "baseline_j9_a", "valid": 192, "raw": 1.0023, "normalized": 0.9966, "median_cal_ms": 39.4}
+{"run": "baseline_j14_a", "valid": 192, "raw": 1.0018, "normalized": 0.997, "median_cal_ms": 40.9}
+{"run": "classic_j4_a", "valid": 192, "raw": 1.7741, "normalized": 1.7654, "median_cal_ms": 42.0}
+{"run": "classic_j14_a", "valid": 192, "raw": 1.7593, "normalized": 1.7568, "median_cal_ms": 43.8}
+{"run": "r1c2_j4_a", "valid": 192, "raw": 2.4833, "normalized": 2.5164, "median_cal_ms": 39.8}
+{"run": "r1c2_j4_b", "valid": 192, "raw": 2.5029, "normalized": 2.5286, "median_cal_ms": 40.1}
+{"run": "r1c2_j9_a", "valid": 192, "raw": 2.2994, "normalized": 2.4011, "median_cal_ms": 42.2}
+{"run": "r1c2_j9_b", "valid": 192, "raw": 2.2969, "normalized": 2.4056, "median_cal_ms": 42.6}
+{"run": "r1c2_j14_a", "valid": 192, "raw": 2.2809, "normalized": 2.3986, "median_cal_ms": 43.1}
